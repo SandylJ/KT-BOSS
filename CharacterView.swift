@@ -41,6 +41,12 @@ struct CharacterView: View {
                                 .background(Color.accentColor.opacity(0.8)).foregroundColor(.white)
                                 .cornerRadius(10).padding()
                         }
+                        NavigationLink(destination: EquipmentView(user: user)) {
+                            Label("View Equipment", systemImage: "shield.fill")
+                                .font(.headline).frame(maxWidth: .infinity).padding()
+                                .background(Color.accentColor.opacity(0.8)).foregroundColor(.white)
+                                .cornerRadius(10).padding()
+                        }
                     }
                     .navigationTitle("Character").navigationBarHidden(true)
                     .onAppear {

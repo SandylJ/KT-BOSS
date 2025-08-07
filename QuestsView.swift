@@ -140,6 +140,9 @@ struct RewardRowView: View {
             case .runes(let amount):
                 Image(systemName: "circle.hexagonpath.fill").foregroundColor(.cyan)
                 Text("\(amount) Runes")
+            case .echoes(let amount):
+                Image(systemName: "speaker.wave.2.circle.fill").foregroundColor(.gray)
+                Text(String(format: "%.2f Echoes", amount))
             }
         }
         .font(.caption)

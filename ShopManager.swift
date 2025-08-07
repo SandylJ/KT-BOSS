@@ -59,6 +59,10 @@ final class ShopManager {
             _ = GameLogicManager.shared.grantXP(to: skill, amount: amount, for: user)
         case .runes(let amount):
             user.runes += amount
+        case .echoes(let amount):
+            if let altar = user.altarOfWhispers {
+                altar.echoes += amount
+            }
         }
     }
 }

@@ -186,3 +186,44 @@ struct Particle: Identifiable {
     let size: CGFloat
     var opacity: Double = 1.0
 }
+
+// MARK: - Reusable Upgrade Row View
+struct UpgradeRowView: View {
+    let title: String
+    let level: Int
+    let description: String
+    let cost: Double
+    let canAfford: Bool
+    let action: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text(title)
+                    .font(.headline)
+                Spacer()
+                Text("Lvl. \(level)")
+                    .font(.headline)
+                    .foregroundColor(.secondary)
+            }
+            
+            Text(description)
+                .font(.caption)
+                .foregroundColor(.secondary)
+            
+            Button(action: action) {
+                HStack {
+                    Image(systemName: "arrow.up.circle.fill")
+                    Text(String(format: "Upgrade for %.1f Echoes", cost))
+                }
+                .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
+            .tint(canAfford ? .cyan : .gray)
+            .disabled(!canAfford)
+        }
+        .padding()
+        .background(Material.regular)
+        .cornerRadius(15)
+    }
+}

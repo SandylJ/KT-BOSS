@@ -111,7 +111,6 @@ struct ChestRewardPopup: View {
             
             ForEach(rewards) { reward in
                 RewardRowView(reward: reward)
-                    .font(.title3)
             }
             
             Button("Awesome!") {

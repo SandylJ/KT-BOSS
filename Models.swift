@@ -11,6 +11,18 @@ enum SkillCategory: String, CaseIterable, Identifiable, Codable {
     case strength, mind, joy, vitality, awareness, flow, finance, other
 }
 
+enum GuildPerk: String, Codable, CaseIterable {
+    case increasedGuildXp, reducedUpgradeCost, increasedBountyRewards
+
+    var description: String {
+        switch self {
+        case .increasedGuildXp: return "+10% Guild XP from all sources"
+        case .reducedUpgradeCost: return "-5% Gold cost for Guild Member upgrades"
+        case .increasedBountyRewards: return "+10% Guild Seals from Bounties"
+        }
+    }
+}
+
 enum PermanentBonus: String, Codable {
     case xpBoost, newDailyQuest, buffDurationIncrease
     var description: String {
@@ -82,8 +94,10 @@ struct Item: Codable, Hashable, Identifiable {
     let consumableEffect: ConsumableEffect?
     let growTime: TimeInterval?
     let harvestReward: HarvestReward?
+    let slot: EquipmentSlot?
+    let bonuses: [EquipmentBonus]?
 
-    enum ItemType: String, Codable { case consumable, material, plantable, special, key } // Added 'key' type
+    enum ItemType: String, Codable { case consumable, material, plantable, special, key, equippable } // Added 'equippable' type
     enum PlantableType: String, Codable { case habitSeed, crop, treeSapling }
     enum Rarity: String, Codable { case common, rare, epic }
     enum ConsumableEffect: Codable, Hashable { case experienceBurst(skill: ChimeraStat, amount: Int), refreshRandomTask }
@@ -92,6 +106,16 @@ struct Item: Codable, Hashable, Identifiable {
         case item(id: String, quantity: Int)
         case experienceBurst(skill: SkillCategory, amount: Int)
     }
+}
+
+
+enum EquipmentSlot: String, Codable, CaseIterable {
+    case head, chest, hands, tool
+}
+
+struct EquipmentBonus: Codable, Hashable {
+    let stat: ChimeraStat
+    let value: Int
 }
 
 
@@ -134,7 +158,17 @@ final class User {
     @Relationship(deleteRule: .cascade) var activeExpeditions: [ActiveExpedition]? = []
     @Relationship(deleteRule: .cascade) var statues: [Statue]? = []
     @Relationship(deleteRule: .cascade) var quests: [Quest]? = []
+    @Relationship(deleteRule: .cascade) var guildBounties: [GuildBounty]? = []
     @Relationship(deleteRule: .cascade, inverse: \AltarOfWhispers.owner) var altarOfWhispers: AltarOfWhispers?
+
+    private var equippedItemsData: Data = Data()
+    var equippedItems: [EquipmentSlot: String] {
+        get { (try? JSONDecoder().decode([EquipmentSlot: String].self, from: equippedItemsData)) ?? [:] }
+        set { equippedItemsData = (try? JSONEncoder().encode(newValue)) ?? Data() }
+    }
+
+    @Relationship(deleteRule: .cascade, inverse: \Guild.owner) var guild: Guild?
+    var guildSeals: Int = 0
 
 
     init(username: String) {
@@ -148,6 +182,58 @@ final class User {
         self.activeExpeditions = []; self.willpower = 0; self.statues = []; self.quests = []
         self.runes = 5; self.isDoubleXpNextTask = false; self.unlockedSpellIDs = []; self.activeBuffs = [:]
         self.altarOfWhispers = nil
+        self.guild = nil
+        self.guildSeals = 0
+    }
+}
+
+@Model
+final class Guild {
+    @Attribute(.unique) var id: UUID
+    var level: Int
+    var xp: Int
+    private var unlockedPerksData: Data = Data()
+    var unlockedPerks: [GuildPerk] {
+        get { (try? JSONDecoder().decode([GuildPerk].self, from: unlockedPerksData)) ?? [] }
+        set { unlockedPerksData = (try? JSONEncoder().encode(newValue)) ?? Data() }
+    }
+    var owner: User?
+
+    init(owner: User?) {
+        self.id = UUID()
+        self.level = 1
+        self.xp = 0
+        self.owner = owner
+        self.unlockedPerks = []
+    }
+
+    var xpToNextLevel: Int {
+        return level * 1000 // Simple scaling for now
+    }
+}
+
+@Model
+final class GuildBounty {
+    @Attribute(.unique) var id: UUID
+    var title: String
+    var bountyDescription: String // Renamed from description
+    var requiredProgress: Int
+    var currentProgress: Int
+    var guildXpReward: Int
+    var guildSealReward: Int
+    var isActive: Bool
+    var owner: User?
+
+    init(title: String, bountyDescription: String, requiredProgress: Int, guildXpReward: Int, guildSealReward: Int, owner: User?) { // Updated initializer
+        self.id = UUID()
+        self.title = title
+        self.bountyDescription = bountyDescription
+        self.requiredProgress = requiredProgress
+        self.currentProgress = 0
+        self.guildXpReward = guildXpReward
+        self.guildSealReward = guildSealReward
+        self.isActive = true
+        self.owner = owner
     }
 }
 
@@ -174,7 +260,7 @@ final class Quest {
     }
     var owner: User?
     init(id: UUID = UUID(), title: String, description: String, type: QuestType, rewards: [LootReward], owner: User?) {
-        self.id = id; self.title = title; self.questDescription = description; self.progress = 0
+        self.id = UUID(); self.title = title; self.questDescription = description; self.progress = 0
         self.lastProgressDate = nil; self.owner = owner; self.type = type; self.rewards = rewards; self.status = .available
     }
     var objectiveDescription: String {
@@ -192,7 +278,7 @@ final class Statue {
     var name: String; var statueDescription: String; var requiredWillpower: Int
     var currentWillpower: Int; var reward: PermanentBonus; var owner: User?
     init(id: UUID = UUID(), name: String, description: String, requiredWillpower: Int, reward: PermanentBonus, owner: User?) {
-        self.id = id; self.name = name; self.statueDescription = description; self.requiredWillpower = requiredWillpower
+        self.id = UUID(); self.name = name; self.statueDescription = description; self.requiredWillpower = requiredWillpower
         self.currentWillpower = 0; self.reward = reward; self.owner = owner
     }
     var progress: Double { requiredWillpower > 0 ? Double(currentWillpower) / Double(requiredWillpower) : 0 }
@@ -287,7 +373,7 @@ final class PlantedTree {
 final class GuildMember {
     @Attribute(.unique) var id: UUID; var name: String; var role: Role; var level: Int
     var xp: Int; var isOnExpedition: Bool; var owner: User?
-    enum Role: String, Codable, CaseIterable { case forager = "Forager", gardener = "Gardener", alchemist = "Alchemist", seer = "Seer" }
+    enum Role: String, Codable, CaseIterable { case forager = "Forager", gardener = "Gardener", alchemist = "Alchemist", seer = "Seer", blacksmith = "Blacksmith" }
     init(name: String, role: Role, owner: User?) {
         self.id = UUID(); self.name = name; self.role = role; self.level = 1
         self.xp = 0; self.isOnExpedition = false; self.owner = owner
@@ -298,6 +384,7 @@ final class GuildMember {
         case .gardener: return "Automatically harvests ready plants from the Garden."
         case .alchemist: return "Periodically transmutes materials or brews simple potions."
         case .seer: return "Boosts the Altar of Whispers' Echo generation."
+        case .blacksmith: return "Specializes in crafting and enhancing equipment."
         }
     }
     func effectDescription() -> String {
@@ -306,6 +393,7 @@ final class GuildMember {
         case .gardener: return "Harvests have a \(self.level * 5)% chance to yield extra materials."
         case .alchemist: return "Every hour, has a \(self.level * 2)% chance to create a potion."
         case .seer: return "Increases Echo generation by \(self.level * 10)%."
+        case .blacksmith: return "Can craft materials or enhance equipped items."
         }
     }
     func upgradeCost() -> Int { 100 * Int(pow(2.0, Double(self.level))) }

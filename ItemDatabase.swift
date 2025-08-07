@@ -9,7 +9,6 @@ final class ItemDatabase {
     let masterQuestList: [Quest]
     let masterSpellList: [Spell]
     let masterRecipeList: [Recipe]
-    // NEW: The master list for all treasure chests in the game.
     let masterChestList: [TreasureChest]
 
     private init() {
@@ -19,7 +18,6 @@ final class ItemDatabase {
         self.masterQuestList = ItemDatabase.createAllQuests()
         self.masterSpellList = ItemDatabase.createAllSpells()
         self.masterRecipeList = ItemDatabase.createAllRecipes()
-        // NEW: Initialize the master chest list.
         self.masterChestList = ItemDatabase.createAllChests()
     }
 
@@ -30,7 +28,6 @@ final class ItemDatabase {
 
     // MARK: - Master Data Creation
     
-    // NEW: Function to define all chests.
     private static func createAllChests() -> [TreasureChest] {
         return [
             TreasureChest(id: "chest_common", name: "Common Chest", description: "Contains a few simple rewards.", cost: 250, keyItemID: nil, rarity: .common, icon: "shippingbox.fill", lootTable: [
@@ -65,7 +62,7 @@ final class ItemDatabase {
             Quest(title: "A Studious Mind", description: "Knowledge is power. Complete 3 Mind tasks.", type: .milestone(category: .mind, count: 3), rewards: [.currency(100), .experienceBurst(skill: .mind, amount: 75)], owner: nil),
             Quest(title: "Joyful Beginnings", description: "Spread a little happiness by completing 3 Joy tasks.", type: .milestone(category: .joy, count: 3), rewards: [.item(id: "seed_serenity", quantity: 2)], owner: nil),
             Quest(title: "The Consistent Hero", description: "Form a habit by completing a Strength task for 3 days in a row.", type: .streak(category: .strength, days: 3), rewards: [.item(id: "seed_discipline", quantity: 1), .runes(1)], owner: nil),
-            Quest(title: "Holistic Development", description: "Show your versatility by completing one task from Strength, Mind, and Joy.", type: .exploration(categories: [.strength, .mind, .joy]), rewards: [.experienceBurst(skill: .vitality, amount: 300), .item(id: "item_ancient_key", quantity: 1)], owner: nil) // MODIFIED: Added key reward
+            Quest(title: "Holistic Development", description: "Show your versatility by completing one task from Strength, Mind, and Joy.", type: .exploration(categories: [.strength, .mind, .joy]), rewards: [.experienceBurst(skill: .vitality, amount: 300), .item(id: "item_ancient_key", quantity: 1)], owner: nil)
         ]
     }
     
@@ -77,42 +74,66 @@ final class ItemDatabase {
         ]
     }
     
-    private static func createAllItems() -> [Item] {
+    private static func createAllEquipment() -> [Item] {
         return [
-            // --- NEW: Key Item ---
-            Item(id: "item_ancient_key", name: "Ancient Key", description: "A heavy, ornate key that hums with a faint energy. It seems destined for a special lock.", itemType: .key, rarity: .epic, icon: "key.fill", plantableType: nil, consumableEffect: nil, growTime: nil, harvestReward: nil),
-            
-            // --- Potions (Consumables) ---
-            Item(id: "item_potion_vigor", name: "Potion of Vigor", description: "A bubbling green liquid that grants a quick burst of energy.", itemType: .consumable, rarity: .common, icon: "testtube.2", plantableType: nil, consumableEffect: .experienceBurst(skill: .discipline, amount: 50), growTime: nil, harvestReward: nil),
-            Item(id: "item_elixir_strength", name: "Elixir of Strength", description: "A thick, red potion that courses through your veins with power.", itemType: .consumable, rarity: .rare, icon: "testtube.2", plantableType: nil, consumableEffect: .experienceBurst(skill: .discipline, amount: 150), growTime: nil, harvestReward: nil),
-            
-            // --- Scrolls (Consumables) ---
-            Item(id: "item_scroll_fortune", name: "Scroll of Fortune", description: "This scroll glitters with luck, increasing your chances of finding treasure.", itemType: .consumable, rarity: .rare, icon: "scroll.fill", plantableType: nil, consumableEffect: .refreshRandomTask, growTime: nil, harvestReward: nil),
+            // Head
+            Item(id: "equip_leather_cowl", name: "Leather Cowl", description: "A simple leather cowl.", itemType: .equippable, rarity: .common, icon: "person.fill", plantableType: nil, consumableEffect: nil, growTime: nil, harvestReward: nil, slot: .head, bonuses: [EquipmentBonus(stat: .resilience, value: 1)]),
+            Item(id: "equip_iron_helmet", name: "Iron Helmet", description: "A sturdy iron helmet.", itemType: .equippable, rarity: .rare, icon: "person.fill", plantableType: nil, consumableEffect: nil, growTime: nil, harvestReward: nil, slot: .head, bonuses: [EquipmentBonus(stat: .resilience, value: 3)]),
 
-            // --- Crafting Materials ---
-            Item(id: "material_sunstone_shard", name: "Sunstone Shard", description: "A fragment that glows with the warmth of the sun.", itemType: .material, rarity: .rare, icon: "triangle.fill", plantableType: nil, consumableEffect: nil, growTime: nil, harvestReward: nil),
-            Item(id: "material_joyful_ember", name: "Joyful Ember", description: "A small, warm ember that crackles with happiness.", itemType: .material, rarity: .common, icon: "flame.fill", plantableType: nil, consumableEffect: nil, growTime: nil, harvestReward: nil),
-            
-            // --- Existing Items ---
-            Item(id: "seed_discipline", name: "Seed of Discipline", description: "Consistency in strength builds a foundation of discipline.", itemType: .plantable, rarity: .rare, icon: "flame.fill", plantableType: .habitSeed, consumableEffect: nil, growTime: 7200, harvestReward: .experienceBurst(skill: .strength, amount: 250)),
-            Item(id: "seed_clarity", name: "Seed of Clarity", description: "A focused mind can see through any illusion.", itemType: .plantable, rarity: .rare, icon: "brain.head.profile", plantableType: .habitSeed, consumableEffect: nil, growTime: 7200, harvestReward: .item(id: "material_essence", quantity: 1)),
-            Item(id: "seed_vigor", name: "Seed of Vigor", description: "Caring for the body yields boundless energy.", itemType: .plantable, rarity: .common, icon: "heart.fill", plantableType: .habitSeed, consumableEffect: nil, growTime: 3600, harvestReward: .experienceBurst(skill: .vitality, amount: 100)),
-            Item(id: "seed_serenity", name: "Seed of Serenity", description: "Joy cultivated daily blossoms into lasting peace.", itemType: .plantable, rarity: .common, icon: "face.smiling.fill", plantableType: .habitSeed, consumableEffect: nil, growTime: 3600, harvestReward: .experienceBurst(skill: .joy, amount: 200)),
-            Item(id: "seed_insight", name: "Seed of Insight", description: "Awareness of the self reveals hidden truths.", itemType: .plantable, rarity: .rare, icon: "eye.fill", plantableType: .habitSeed, consumableEffect: nil, growTime: 7200, harvestReward: .item(id: "material_dream_shard", quantity: 1)),
-            Item(id: "seed_inspiration", name: "Seed of Inspiration", description: "Moments of flow can spark brilliant ideas.", itemType: .plantable, rarity: .epic, icon: "wind", plantableType: .habitSeed, consumableEffect: nil, growTime: 14400, harvestReward: .currency(500)),
-            Item(id: "seed_prosperity", name: "Seed of Prosperity", description: "Financial diligence leads to future abundance.", itemType: .plantable, rarity: .common, icon: "dollarsign.circle.fill", plantableType: .habitSeed, consumableEffect: nil, growTime: 3600, harvestReward: .currency(500)),
-            Item(id: "seed_order", name: "Seed of Order", description: "Tidying your space also tidies your mind.", itemType: .plantable, rarity: .common, icon: "sparkles.square.filled.on.square", plantableType: .habitSeed, consumableEffect: nil, growTime: 3600, harvestReward: .experienceBurst(skill: .other, amount: 150)),
-            Item(id: "crop_sunwheat", name: "Sun-Kissed Wheat", description: "Basic wheat that grows quickly.", itemType: .plantable, rarity: .common, icon: "leaf.fill", plantableType: .crop, consumableEffect: nil, growTime: 1800, harvestReward: .item(id: "material_sunwheat_grain", quantity: 3)),
-            Item(id: "crop_glowcap", name: "Glowcap Mushroom", description: "A mushroom that faintly glows.", itemType: .plantable, rarity: .rare, icon: "circle.grid.3x3.fill", plantableType: .crop, consumableEffect: nil, growTime: 5400, harvestReward: .item(id: "material_glowcap_spore", quantity: 2)),
-            Item(id: "tree_ironwood", name: "Ironwood Sapling", description: "A slow-growing but incredibly resilient tree.", itemType: .plantable, rarity: .epic, icon: "tree.fill", plantableType: .treeSapling, consumableEffect: nil, growTime: 86400, harvestReward: .item(id: "material_ironwood_bark", quantity: 5)),
-            Item(id: "material_essence", name: "Focused Essence", description: "A crystalline fragment shimmering with pure mental energy.", itemType: .material, rarity: .common, icon: "sparkles", plantableType: nil, consumableEffect: nil, growTime: nil, harvestReward: nil),
-            Item(id: "material_dream_shard", name: "Dream Shard", description: "A fragment of a forgotten dream, humming with potential.", itemType: .material, rarity: .rare, icon: "moon.stars.fill", plantableType: nil, consumableEffect: nil, growTime: nil, harvestReward: nil),
-            Item(id: "material_sunwheat_grain", name: "Sun-Kissed Grain", description: "A warm, golden grain of wheat.", itemType: .material, rarity: .common, icon: "leaf.fill", plantableType: nil, consumableEffect: nil, growTime: nil, harvestReward: nil),
-            Item(id: "material_glowcap_spore", name: "Glowcap Spore", description: "A faintly glowing mushroom spore.", itemType: .material, rarity: .rare, icon: "circle.grid.3x3.fill", plantableType: nil, consumableEffect: nil, growTime: nil, harvestReward: nil),
-            Item(id: "material_ironwood_bark", name: "Ironwood Bark", description: "Remarkably tough bark from the legendary Ironwood tree.", itemType: .material, rarity: .epic, icon: "tree.fill", plantableType: nil, consumableEffect: nil, growTime: nil, harvestReward: nil),
+            // Chest
+            Item(id: "equip_simple_robe", name: "Simple Robe", description: "A simple cloth robe.", itemType: .equippable, rarity: .common, icon: "person.fill", plantableType: nil, consumableEffect: nil, growTime: nil, harvestReward: nil, slot: .chest, bonuses: [EquipmentBonus(stat: .mindfulness, value: 1)]),
+            Item(id: "equip_scholars_robe", name: "Scholar's Robe", description: "A robe worn by scholars.", itemType: .equippable, rarity: .rare, icon: "person.fill", plantableType: nil, consumableEffect: nil, growTime: nil, harvestReward: nil, slot: .chest, bonuses: [EquipmentBonus(stat: .intellect, value: 3)]),
+
+            // Hands
+            Item(id: "equip_leather_gloves", name: "Leather Gloves", description: "A pair of simple leather gloves.", itemType: .equippable, rarity: .common, icon: "person.fill", plantableType: nil, consumableEffect: nil, growTime: nil, harvestReward: nil, slot: .hands, bonuses: [EquipmentBonus(stat: .creativity, value: 1)]),
+            Item(id: "equip_gauntlets_of_strength", name: "Gauntlets of Strength", description: "Gauntlets that imbue the wearer with strength.", itemType: .equippable, rarity: .epic, icon: "person.fill", plantableType: nil, consumableEffect: nil, growTime: nil, harvestReward: nil, slot: .hands, bonuses: [EquipmentBonus(stat: .discipline, value: 5)]),
+
+            // Tool
+            Item(id: "equip_rusty_axe", name: "Rusty Axe", description: "A rusty old axe.", itemType: .equippable, rarity: .common, icon: "hammer.fill", plantableType: nil, consumableEffect: nil, growTime: nil, harvestReward: nil, slot: .tool, bonuses: [EquipmentBonus(stat: .discipline, value: 1)]),
+            Item(id: "equip_masterwork_pickaxe", name: "Masterwork Pickaxe", description: "A pickaxe of exceptional quality.", itemType: .equippable, rarity: .epic, icon: "hammer.fill", plantableType: nil, consumableEffect: nil, growTime: nil, harvestReward: nil, slot: .tool, bonuses: [EquipmentBonus(stat: .discipline, value: 10)]),
         ]
     }
-    
+
+    private static func createAllItems() -> [Item] {
+        var allItems: [Item] = []
+        allItems.append(contentsOf: createAllEquipment())
+
+        allItems.append(contentsOf: [
+            // --- NEW: Key Item ---
+            Item(id: "item_ancient_key", name: "Ancient Key", description: "A heavy, ornate key that hums with a faint energy. It seems destined for a special lock.", itemType: .key, rarity: .epic, icon: "key.fill", plantableType: nil, consumableEffect: nil, growTime: nil, harvestReward: nil, slot: nil, bonuses: nil),
+            
+            // --- Potions (Consumables) ---
+            Item(id: "item_potion_vigor", name: "Potion of Vigor", description: "A bubbling green liquid that grants a quick burst of energy.", itemType: .consumable, rarity: .common, icon: "testtube.2", plantableType: nil, consumableEffect: .experienceBurst(skill: .discipline, amount: 50), growTime: nil, harvestReward: nil, slot: nil, bonuses: nil),
+            Item(id: "item_elixir_strength", name: "Elixir of Strength", description: "A thick, red potion that courses through your veins with power.", itemType: .consumable, rarity: .rare, icon: "testtube.2", plantableType: nil, consumableEffect: .experienceBurst(skill: .discipline, amount: 150), growTime: nil, harvestReward: nil, slot: nil, bonuses: nil),
+            
+            // --- Scrolls (Consumables) ---
+            Item(id: "item_scroll_fortune", name: "Scroll of Fortune", description: "This scroll glitters with luck, increasing your chances of finding treasure.", itemType: .consumable, rarity: .rare, icon: "scroll.fill", plantableType: nil, consumableEffect: .refreshRandomTask, growTime: nil, harvestReward: nil, slot: nil, bonuses: nil),
+
+            // --- Crafting Materials ---
+            Item(id: "material_sunstone_shard", name: "Sunstone Shard", description: "A fragment that glows with the warmth of the sun.", itemType: .material, rarity: .rare, icon: "triangle.fill", plantableType: nil, consumableEffect: nil, growTime: nil, harvestReward: nil, slot: nil, bonuses: nil),
+            Item(id: "material_joyful_ember", name: "Joyful Ember", description: "A small, warm ember that crackles with happiness.", itemType: .material, rarity: .common, icon: "flame.fill", plantableType: nil, consumableEffect: nil, growTime: nil, harvestReward: nil, slot: nil, bonuses: nil),
+            
+            // --- Existing Items ---
+            Item(id: "seed_discipline", name: "Seed of Discipline", description: "Consistency in strength builds a foundation of discipline.", itemType: .plantable, rarity: .rare, icon: "flame.fill", plantableType: .habitSeed, consumableEffect: nil, growTime: 7200, harvestReward: .experienceBurst(skill: .strength, amount: 250), slot: nil, bonuses: nil),
+            Item(id: "seed_clarity", name: "Seed of Clarity", description: "A focused mind can see through any illusion.", itemType: .plantable, rarity: .rare, icon: "brain.head.profile", plantableType: .habitSeed, consumableEffect: nil, growTime: 7200, harvestReward: .item(id: "material_essence", quantity: 1), slot: nil, bonuses: nil),
+            Item(id: "seed_vigor", name: "Seed of Vigor", description: "Caring for the body yields boundless energy.", itemType: .plantable, rarity: .common, icon: "heart.fill", plantableType: .habitSeed, consumableEffect: nil, growTime: 3600, harvestReward: .experienceBurst(skill: .vitality, amount: 100), slot: nil, bonuses: nil),
+            Item(id: "seed_serenity", name: "Seed of Serenity", description: "Joy cultivated daily blossoms into lasting peace.", itemType: .plantable, rarity: .common, icon: "face.smiling.fill", plantableType: .habitSeed, consumableEffect: nil, growTime: 3600, harvestReward: .experienceBurst(skill: .joy, amount: 200), slot: nil, bonuses: nil),
+            Item(id: "seed_insight", name: "Seed of Insight", description: "Awareness of the self reveals hidden truths.", itemType: .plantable, rarity: .rare, icon: "eye.fill", plantableType: .habitSeed, consumableEffect: nil, growTime: 7200, harvestReward: .item(id: "material_dream_shard", quantity: 1), slot: nil, bonuses: nil),
+            Item(id: "seed_inspiration", name: "Seed of Inspiration", description: "Moments of flow can spark brilliant ideas.", itemType: .plantable, rarity: .epic, icon: "wind", plantableType: .habitSeed, consumableEffect: nil, growTime: 14400, harvestReward: .currency(500), slot: nil, bonuses: nil),
+            Item(id: "seed_prosperity", name: "Seed of Prosperity", description: "Financial diligence leads to future abundance.", itemType: .plantable, rarity: .common, icon: "dollarsign.circle.fill", plantableType: .habitSeed, consumableEffect: nil, growTime: 3600, harvestReward: .currency(500), slot: nil, bonuses: nil),
+            Item(id: "seed_order", name: "Seed of Order", description: "Tidying your space also tidies your mind.", itemType: .plantable, rarity: .common, icon: "sparkles.square.filled.on.square", plantableType: .habitSeed, consumableEffect: nil, growTime: 3600, harvestReward: .experienceBurst(skill: .other, amount: 150), slot: nil, bonuses: nil),
+            Item(id: "crop_sunwheat", name: "Sun-Kissed Wheat", description: "Basic wheat that grows quickly.", itemType: .plantable, rarity: .common, icon: "leaf.fill", plantableType: .crop, consumableEffect: nil, growTime: 1800, harvestReward: .item(id: "material_sunwheat_grain", quantity: 3), slot: nil, bonuses: nil),
+            Item(id: "crop_glowcap", name: "Glowcap Mushroom", description: "A mushroom that faintly glows.", itemType: .plantable, rarity: .rare, icon: "circle.grid.3x3.fill", plantableType: .crop, consumableEffect: nil, growTime: 5400, harvestReward: .item(id: "material_glowcap_spore", quantity: 2), slot: nil, bonuses: nil),
+            Item(id: "tree_ironwood", name: "Ironwood Sapling", description: "A slow-growing but incredibly resilient tree.", itemType: .plantable, rarity: .epic, icon: "tree.fill", plantableType: .treeSapling, consumableEffect: nil, growTime: 86400, harvestReward: .item(id: "material_ironwood_bark", quantity: 5), slot: nil, bonuses: nil),
+            Item(id: "material_essence", name: "Focused Essence", description: "A crystalline fragment shimmering with pure mental energy.", itemType: .material, rarity: .common, icon: "sparkles", plantableType: nil, consumableEffect: nil, growTime: nil, harvestReward: nil, slot: nil, bonuses: nil),
+            Item(id: "material_dream_shard", name: "Dream Shard", description: "A fragment of a forgotten dream, humming with potential.", itemType: .material, rarity: .rare, icon: "moon.stars.fill", plantableType: nil, consumableEffect: nil, growTime: nil, harvestReward: nil, slot: nil, bonuses: nil),
+            Item(id: "material_sunwheat_grain", name: "Sun-Kissed Grain", description: "A warm, golden grain of wheat.", itemType: .material, rarity: .common, icon: "leaf.fill", plantableType: nil, consumableEffect: nil, growTime: nil, harvestReward: nil, slot: nil, bonuses: nil),
+            Item(id: "material_glowcap_spore", name: "Glowcap Spore", description: "A faintly glowing mushroom spore.", itemType: .material, rarity: .rare, icon: "circle.grid.3x3.fill", plantableType: nil, consumableEffect: nil, growTime: nil, harvestReward: nil, slot: nil, bonuses: nil),
+            Item(id: "material_ironwood_bark", name: "Ironwood Bark", description: "Remarkably tough bark from the legendary Ironwood tree.", itemType: .material, rarity: .epic, icon: "tree.fill", plantableType: nil, consumableEffect: nil, growTime: nil, harvestReward: nil, slot: nil, bonuses: nil),
+        ])
+        return allItems
+    }
+
     private static func createAllExpeditions() -> [Expedition] {
         return [
             Expedition(id: "exp_whispering_woods", name: "Forage the Whispering Woods", description: "A simple journey to gather common materials.", duration: 3600, minMembers: 1, requiredRoles: [.forager], lootTable: ["material_essence": 80], xpReward: 50),

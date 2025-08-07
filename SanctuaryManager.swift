@@ -72,48 +72,5 @@ final class SanctuaryManager {
         }
     }
 
-    // MARK: - Guild & Expedition Logic (Unchanged)
     
-    func hireGuildMember(role: GuildMember.Role, for user: User, context: ModelContext) {
-        let hireCost = 250
-        guard user.currency >= hireCost else { return }
-        
-        user.currency -= hireCost
-        let newMember = GuildMember(name: "New \(role.rawValue)", role: role, owner: user)
-        user.guildMembers?.append(newMember)
-    }
-    
-    func upgradeGuildMember(member: GuildMember, user: User, context: ModelContext) {
-        let cost = member.upgradeCost()
-        guard user.currency >= cost else { return }
-        
-        user.currency -= cost
-        member.level += 1
-    }
-    
-    func launchExpedition(expeditionID: String, with memberIDs: [UUID], for user: User, context: ModelContext) {
-        memberIDs.forEach { id in
-            user.guildMembers?.first(where: { $0.id == id })?.isOnExpedition = true
-        }
-        
-        let newExpedition = ActiveExpedition(expeditionID: expeditionID, memberIDs: memberIDs, startTime: .now, owner: user)
-        user.activeExpeditions?.append(newExpedition)
-    }
-    
-    func checkCompletedExpeditions(for user: User, context: ModelContext) {
-        guard let expeditions = user.activeExpeditions, !expeditions.isEmpty else { return }
-        
-        let completedExpeditions = expeditions.filter { $0.endTime <= .now }
-        
-        for expedition in completedExpeditions {
-            user.totalXP += expedition.expedition?.xpReward ?? 0
-            user.currency += 100
-            
-            expedition.memberIDs.forEach { id in
-                user.guildMembers?.first(where: { $0.id == id })?.isOnExpedition = false
-            }
-            
-            context.delete(expedition)
-        }
-    }
 }

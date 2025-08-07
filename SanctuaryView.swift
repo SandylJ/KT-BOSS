@@ -28,6 +28,9 @@ struct SanctuaryView: View {
                         
                         // Sanctuary Features Section
                         Section(header: Text("Sanctuary")) {
+                            NavigationLink(destination: GuildMasterView(user: user)) {
+                                Label("Guild Master", systemImage: "person.text.rectangle")
+                            }
                             NavigationLink(destination: AltarOfWhispersView(user: user)) {
                                 Label("Altar of Whispers", systemImage: "flame.fill")
                             }
@@ -58,6 +61,8 @@ struct SanctuaryView: View {
                         // Initialize systems for the user if they haven't been already.
                         ObsidianGymnasiumManager.shared.initializeStatues(for: user, context: modelContext)
                         QuestManager.shared.initializeQuests(for: user, context: modelContext)
+                        GuildManager.shared.initializeGuild(for: user, context: modelContext)
+                        GuildManager.shared.generateDailyBounties(for: user, context: modelContext)
                     }
                 } else {
                     ContentUnavailableView("Loading...", systemImage: "hourglass")

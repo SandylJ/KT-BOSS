@@ -266,6 +266,10 @@ public struct GuildHallView: View {
     public var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
+                if let guild = user.guild {
+                    GuildProgressionView(guild: guild)
+                }
+
                 Section {
                     if user.guildMembers?.isEmpty ?? true {
                         ContentUnavailableView("Guild is Empty", systemImage: "person.3.slash", description: Text("Hire members from the list below."))
@@ -335,7 +339,7 @@ public struct ExpeditionBoardView: View {
             ExpeditionLaunchView(expedition: expedition, user: user)
         }
         .onAppear {
-            SanctuaryManager.shared.checkCompletedExpeditions(for: user, context: modelContext)
+            GuildManager.shared.checkCompletedExpeditions(for: user, context: modelContext)
         }
     }
 }
@@ -364,7 +368,7 @@ struct GuildMemberCardView: View {
                 Text("On Expedition").font(.caption).foregroundColor(.blue).bold()
             } else {
                 Button("Upgrade (\(member.upgradeCost()) G)") {
-                    SanctuaryManager.shared.upgradeGuildMember(member: member, user: user, context: modelContext)
+                    GuildManager.shared.upgradeGuildMember(member: member, user: user, context: modelContext)
                 }
                 .buttonStyle(.bordered).tint(.blue)
                 .disabled(user.currency < member.upgradeCost())
@@ -388,7 +392,7 @@ struct HireableMemberCardView: View {
             Text(tempMember.roleDescription).font(.caption).italic().foregroundColor(.secondary)
             
             Button("Hire (\(cost) G)") {
-                SanctuaryManager.shared.hireGuildMember(role: role, for: user, context: modelContext)
+                GuildManager.shared.hireGuildMember(role: role, for: user, context: modelContext)
             }
             .buttonStyle(.borderedProminent).tint(.green)
             .disabled(user.currency < cost)
@@ -468,7 +472,7 @@ struct ExpeditionLaunchView: View {
                 }
                 
                 Button("Launch Expedition") {
-                    SanctuaryManager.shared.launchExpedition(expeditionID: expedition.id, with: Array(selectedMemberIDs), for: user, context: modelContext)
+                    GuildManager.shared.launchExpedition(expeditionID: expedition.id, with: Array(selectedMemberIDs), for: user, context: modelContext)
                     dismiss()
                 }
                 .buttonStyle(JuicyButtonStyle())

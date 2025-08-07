@@ -197,7 +197,8 @@ final class GameLogicManager {
         user.totalXP += subTaskXP
         var didEvolve = false
         if let chimera = user.chimera {
-            let statGain = Int(baseXP) / 10
+            var statGain = Int(baseXP) / 10
+            statGain += getBonus(for: task.associatedStat, from: user)
             updateChimeraStat(chimera, for: task.associatedStat, amount: statGain)
             didEvolve = ChimeraEvolutionManager.shared.checkForEvolution(chimera: chimera)
         }
@@ -216,7 +217,9 @@ final class GameLogicManager {
         var didEvolve = false
         if let chimera = user.chimera {
             let chimeraStat = mapSkillToChimeraStat(dailyTask.category)
-            updateChimeraStat(chimera, for: chimeraStat, amount: dailyTask.xp / 10)
+            var statGain = dailyTask.xp / 10
+            statGain += getBonus(for: chimeraStat, from: user)
+            updateChimeraStat(chimera, for: chimeraStat, amount: statGain)
             didEvolve = ChimeraEvolutionManager.shared.checkForEvolution(chimera: chimera)
         }
         let didPlayerLevelUp = checkForLevelUp(user: user)
@@ -229,7 +232,9 @@ final class GameLogicManager {
         user.totalXP += Int(journalingXP)
         var didEvolve = false
         if let chimera = user.chimera {
-            updateChimeraStat(chimera, for: .mindfulness, amount: Int(journalingXP) / 10)
+            var statGain = Int(journalingXP) / 10
+            statGain += getBonus(for: .mindfulness, from: user)
+            updateChimeraStat(chimera, for: .mindfulness, amount: statGain)
             didEvolve = ChimeraEvolutionManager.shared.checkForEvolution(chimera: chimera)
         }
         ChallengeManager.shared.updateChallengeProgressForJournaling(on: user)
@@ -264,6 +269,13 @@ final class GameLogicManager {
         case .hard: return 100; case .epic: return 250
         }
     }
+
+    private func getBonus(for stat: ChimeraStat, from user: User) -> Int {
+        return EquipmentManager.shared.getBonuses(for: user)
+            .filter { $0.stat == stat }
+            .reduce(0) { $0 + $1.value }
+    }
+
     private func updateChimeraStat(_ chimera: Chimera, for stat: ChimeraStat, amount: Int) {
         switch stat {
         case .discipline: chimera.discipline += amount; case .mindfulness: chimera.mindfulness += amount
